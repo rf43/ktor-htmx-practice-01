@@ -6,14 +6,6 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-
-private val json = Json {
-    prettyPrint = true
-    isLenient = true
-    ignoreUnknownKeys = true
-}
 
 fun Application.configureRouting(dao: CursedDAO) {
     install(StatusPages) {
@@ -24,12 +16,7 @@ fun Application.configureRouting(dao: CursedDAO) {
     routing {
         get("/") {
             val posts = dao.getAllPosts()
-
-            call.respondText(
-                text = json.encodeToString(posts),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.OK
-            )
+            call.respond(posts)
         }
     }
 }
