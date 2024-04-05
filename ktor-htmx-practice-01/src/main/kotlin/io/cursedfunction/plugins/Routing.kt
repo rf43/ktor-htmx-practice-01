@@ -27,6 +27,7 @@ fun Application.configureRouting(dao: CursedDAO) {
             call.respondText(
                 text = json.encodeToString(posts),
                 contentType = ContentType.Application.Json,
+                status = HttpStatusCode.OK
             )
         }
     }
