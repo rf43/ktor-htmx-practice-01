@@ -18,7 +18,7 @@ import java.util.*
  * **See:** https://github.com/PerfectDreams/ExposedPowerUtils/tree/main/postgres-java-time
  */
 
-class JavaTimestampWithTimeZoneColumnType : ColumnType(), IDateColumnType {
+private class TimestampWithTimeZoneColumnType : ColumnType(), IDateColumnType {
     override val hasTimePart: Boolean = true
 
     private val utcZoneOffset = ZoneOffset.UTC
@@ -26,19 +26,18 @@ class JavaTimestampWithTimeZoneColumnType : ColumnType(), IDateColumnType {
 
     override fun nonNullValueToString(value: Any): String =
         when (value) {
-            !is Instant -> error("$value is not a Instant!")
-            else -> "'$value'"
+            is java.time.Instant -> Timestamp.from(value).toString()
+            is Instant -> "'$value'"
+            else -> error("$value is not a java.time.Instant nor a kotlinx.datetime.Instant!")
         }
 
-    override fun valueFromDB(value: Any): Instant {
-        if (value is Timestamp) {
-            return value.toInstant().toKotlinInstant()
-        } else if (value is Instant) {
-            return value
+    override fun valueFromDB(value: Any): Any =
+        when (value) {
+            is Timestamp -> value.toInstant().toKotlinInstant()
+            is java.time.Instant -> value.toKotlinInstant()
+            is Instant -> value
+            else -> error("$value is not a java.sql.Timestamp nor a java.time.Instant nor kotlinx.datetime.Instant!")
         }
-
-        error("$value is not a java.sql.Timestamp nor a kotlinx.datetime.Instant!")
-    }
 
     override fun readObject(rs: ResultSet, index: Int): Any? {
         return rs.getTimestamp(index, calendarTimeZoneInstance)
@@ -46,12 +45,12 @@ class JavaTimestampWithTimeZoneColumnType : ColumnType(), IDateColumnType {
 
     override fun sqlType() = "TIMESTAMP WITH TIME ZONE"
 
-    override fun notNullValueToDB(value: Any): Any {
-        if (value !is Instant)
-            error("$value is not a kotlinx.datetime.Instant!")
-
-        return Timestamp.from(value.toJavaInstant())
-    }
+    override fun notNullValueToDB(value: Any): Any =
+        when (value) {
+            is java.time.Instant -> Timestamp.from(value)
+            is Instant -> Timestamp.from(value.toJavaInstant())
+            else -> error("$value is not a java.time.Instant nor a kotlinx.datetime.Instant!")
+        }
 }
 
 /**
@@ -62,4 +61,4 @@ class JavaTimestampWithTimeZoneColumnType : ColumnType(), IDateColumnType {
  * @param name The column name
  */
 fun Table.timestampWithTimeZone(name: String): Column<Instant> =
-    registerColumn(name, JavaTimestampWithTimeZoneColumnType())
+    registerColumn(name, TimestampWithTimeZoneColumnType())
