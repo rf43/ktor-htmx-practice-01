@@ -10,7 +10,12 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 fun Application.configureDAO() {
-    install(CursedDAOPlugin)
+    install(CursedDAOPlugin) {
+        theThing { thing ->
+            println("RF43: The thing is done!")
+            println("RF43: thing => $thing")
+        }
+    }
 }
 
 interface CursedDAO {
@@ -31,9 +36,13 @@ class CursedDAOImpl : CursedDAO {
 }
 
 private val CursedDAOPlugin: ApplicationPlugin<CursedDAOPluginConfig> =
-    createApplicationPlugin(name = "DAOPlugin", ::CursedDAOPluginConfig) { CursedDAOConnection.init() }
+    createApplicationPlugin(name = "CursedDAOPlugin", ::CursedDAOPluginConfig) { CursedDAOConnection.init() }
 
-private class CursedDAOPluginConfig
+private class CursedDAOPluginConfig {
+    fun theThing(thing: (String) -> Unit) {
+        thing("From inside CursedDAOPluginConfig")
+    }
+}
 
 private object CursedDAOConnection {
     fun init() {
