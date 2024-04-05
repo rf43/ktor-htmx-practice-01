@@ -11,9 +11,10 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 
 fun Application.configureDAO() {
     install(CursedDAOPlugin) {
-        theThing { thing ->
-            println("RF43: The thing is done!")
-            println("RF43: thing => $thing")
+        connection {
+            url = "jdbc:postgresql://localhost:5432/ktor-htmx"
+            driver = "org.postgresql.Driver"
+            user = "ktor-htmx"
         }
     }
 }
@@ -35,21 +36,35 @@ class CursedDAOImpl : CursedDAO {
     }
 }
 
-private val CursedDAOPlugin: ApplicationPlugin<CursedDAOPluginConfig> =
-    createApplicationPlugin(name = "CursedDAOPlugin", ::CursedDAOPluginConfig) { CursedDAOConnection.init() }
+private val CursedDAOPlugin: ApplicationPlugin<CursedDAOConfig> =
+    createApplicationPlugin(name = "CursedDAOPlugin", ::CursedDAOConfig) {
+        CursedDAOConnection.init(
+            credentials = pluginConfig.credential ?: error("No config credentials found!")
+        )
+    }
 
-private class CursedDAOPluginConfig {
-    fun theThing(thing: (String) -> Unit) {
-        thing("From inside CursedDAOPluginConfig")
+private class CursedDAOConfig {
+    var credential: CursedDBCredentials? = null
+
+    inline fun connection(block: CursedDBCredentials.() -> Unit) {
+        if (credential != null) return
+        credential = CursedDBCredentials().apply(block)
     }
 }
 
+private class CursedDBCredentials {
+    var url: String = ""
+    var driver: String = ""
+    var user: String = ""
+    var password: String = ""
+}
+
 private object CursedDAOConnection {
-    fun init() {
+    fun init(credentials: CursedDBCredentials) {
         Database.connect(
-            url = "jdbc:postgresql://localhost:5432/ktor-htmx",
-            driver = "org.postgresql.Driver",
-            user = "ktor-htmx",
+            url = credentials.url,
+            driver = credentials.driver,
+            user = credentials.user,
         )
     }
 
