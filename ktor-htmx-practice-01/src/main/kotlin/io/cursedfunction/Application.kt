@@ -1,6 +1,11 @@
 package io.cursedfunction
 
-import io.cursedfunction.plugins.*
+import io.cursedfunction.plugins.configureHTTP
+import io.cursedfunction.plugins.configureRouting
+import io.cursedfunction.plugins.configureSerialization
+import io.cursedfunction.plugins.configureTemplating
+import io.cursedfunction.plugins.dao.CursedDAOImpl
+import io.cursedfunction.plugins.dao.configureDAO
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
