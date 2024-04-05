@@ -2,14 +2,19 @@ package io.cursedfunction.plugins
 
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.html.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.html.body
-import kotlinx.html.h1
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-fun Application.configureRouting() {
+private val json = Json {
+    prettyPrint = true
+    isLenient = true
+    ignoreUnknownKeys = true
+}
+
+fun Application.configureRouting(dao: CursedDAO) {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
@@ -17,11 +22,13 @@ fun Application.configureRouting() {
     }
     routing {
         get("/") {
-            call.respondHtml {
-                body {
-                    h1 { +"Hello, Ktor! OMG!!!" }
-                }
-            }
+            val posts = dao.getAllPosts()
+            call.respondText(
+                text = json.encodeToString(
+                    value = posts
+                ),
+                contentType = ContentType.Application.Json,
+            )
         }
     }
 }
