@@ -23,10 +23,9 @@ fun Application.configureRouting(dao: CursedDAO) {
     routing {
         get("/") {
             val posts = dao.getAllPosts()
+
             call.respondText(
-                text = json.encodeToString(
-                    value = posts
-                ),
+                text = json.encodeToString(posts),
                 contentType = ContentType.Application.Json,
             )
         }

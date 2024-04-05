@@ -18,24 +18,24 @@ interface CursedDAO {
 }
 
 class CursedDAOImpl : CursedDAO {
-    override suspend fun getAllPosts(): List<BlogPost> = DAOConnection.dbQuery {
-        PostTable.selectAll().map { row ->
+    override suspend fun getAllPosts(): List<BlogPost> = CursedDAOConnection.dbQuery {
+        CursedPostTable.selectAll().map { row ->
             BlogPost(
-                id = row[PostTable.id],
-                title = row[PostTable.title],
-                content = row[PostTable.content],
-                timestamp = row[PostTable.timestamp]
+                id = row[CursedPostTable.id],
+                title = row[CursedPostTable.title],
+                content = row[CursedPostTable.content],
+                timestamp = row[CursedPostTable.timestamp]
             )
         }
     }
 }
 
-private val CursedDAOPlugin: ApplicationPlugin<DAOPluginConfig> =
-    createApplicationPlugin(name = "DAOPlugin", ::DAOPluginConfig) { DAOConnection.init() }
+private val CursedDAOPlugin: ApplicationPlugin<CursedDAOPluginConfig> =
+    createApplicationPlugin(name = "DAOPlugin", ::CursedDAOPluginConfig) { CursedDAOConnection.init() }
 
-private class DAOPluginConfig
+private class CursedDAOPluginConfig
 
-private object DAOConnection {
+private object CursedDAOConnection {
     fun init() {
         Database.connect(
             url = "jdbc:postgresql://localhost:5432/ktor-htmx",
@@ -48,7 +48,7 @@ private object DAOConnection {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 }
 
-private object PostTable : Table("cursed_posts") {
+private object CursedPostTable : Table("cursed_posts") {
     val id = integer("post_id").autoIncrement()
     val title = varchar("post_title", 255)
     val content = text("post_content")
