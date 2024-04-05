@@ -1,11 +1,10 @@
-package io.cursedfunction.plugins.dao
+package io.cursedfunction.persistence
 
 import io.cursedfunction.models.BlogPost
+import io.cursedfunction.plugins.dao.CursedDBConnection
 import io.cursedfunction.utils.datetime.timestampWithTimeZone
-import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 interface CursedDAO {
     suspend fun getAllPosts(): List<BlogPost>
@@ -22,11 +21,6 @@ class CursedDAOImpl : CursedDAO {
             )
         }
     }
-}
-
-private object CursedDBConnection {
-    suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
 }
 
 private object CursedPostTable : Table("cursed_posts") {
