@@ -5,5 +5,6 @@ import io.ktor.server.routing.*
 
 fun Application.configureTemplating() {
     routing {
+        // TODO: Add templating routes here
     }
 }
